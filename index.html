@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HBD 🎂</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #fdf6e3;
+    min-height: 100vh;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .card-wrap {
+    perspective: 900px;
+    margin: 40px auto 20px;
+    max-width: 700px;
+    width: 95%;
+  }
+  .card {
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease;
+    border-radius: 18px;
+    box-shadow: 0 16px 48px rgba(120,80,40,0.25);
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .card img {
+    width: 100%;
+    display: block;
+  }
+  .message-box {
+    background: rgba(255,255,255,0.88);
+    border-radius: 20px;
+    padding: 18px 28px;
+    margin: 0 auto 40px;
+    max-width: 600px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(180,120,60,0.12);
+    font-size: 1.1rem;
+    color: #6b3e26;
+    line-height: 1.9;
+    font-family: Georgia, serif;
+  }
+  canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 999;
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div class="card-wrap" id="wrap">
+  <div class="card" id="card">
+    <img src="myangle.png" alt="HBD">
+  </div>
+</div>
+
+<div class="message-box">
+  🍫 생일 축하해! 항상 달콤하고 행복한 하루 보내 🎂⭐
+</div>
+
+<script>
+// ── 3D 기울기 효과 ──
+const wrap = document.getElementById('wrap');
+const card = document.getElementById('card');
+
+wrap.addEventListener('mousemove', e => {
+  const r = wrap.getBoundingClientRect();
+  const x = (e.clientX - r.left) / r.width - 0.5;
+  const y = (e.clientY - r.top) / r.height - 0.5;
+  card.style.transform = `rotateY(${x * 22}deg) rotateX(${-y * 22}deg) scale(1.03)`;
+});
+wrap.addEventListener('mouseleave', () => {
+  card.style.transform = 'rotateY(0deg) rotateX(0deg) scale(1)';
+});
+
+// 모바일 기울기
+window.addEventListener('deviceorientation', e => {
+  const x = (e.gamma || 0) / 45;
+  const y = (e.beta  || 0) / 90;
+  card.style.transform = `rotateY(${x * 18}deg) rotateX(${-y * 18}deg)`;
+});
+
+// ── 초콜릿/별 파티클 ──
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+resize();
+window.addEventListener('resize', resize);
+
+const emojis = ['🍫','⭐','🌟','✨','🍪','💫','🍬','🌙'];
+const particles = Array.from({length: 45}, () => ({
+  x: Math.random() * innerWidth,
+  y: Math.random() * innerHeight - innerHeight,
+  e: emojis[Math.floor(Math.random() * emojis.length)],
+  size: 15 + Math.random() * 18,
+  speed: 0.8 + Math.random() * 1.8,
+  drift: (Math.random() - 0.5) * 1.1,
+  rot: Math.random() * Math.PI * 2,
+  rotS: (Math.random() - 0.5) * 0.05,
+  op: 0.65 + Math.random() * 0.35
+}));
+
+(function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => {
+    p.y += p.speed; p.x += p.drift; p.rot += p.rotS;
+    if (p.y > canvas.height + 40) { p.y = -40; p.x = Math.random() * canvas.width; }
+    ctx.save();
+    ctx.globalAlpha = p.op;
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.font = `${p.size}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(p.e, 0, 0);
+    ctx.restore();
+  });
+  requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>
